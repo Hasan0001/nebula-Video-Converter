@@ -6,6 +6,9 @@ A beautiful, professional Windows desktop application for video encoding and opt
 ![Platform](https://img.shields.io/badge/platform-Windows-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
+<img width="1386" height="893" alt="Image" src="https://github.com/user-attachments/assets/2b8c9e52-2f6e-4030-a0be-8226698e95ee" />
+
+
 ## ✨ Features
 
 - **Professional Glassmorphism UI** - Modern, sleek interface with stunning visual effects
