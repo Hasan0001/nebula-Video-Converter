@@ -1,0 +1,73 @@
+═══════════════════════════════════════════════════════════
+    📤 HOW TO UPLOAD TO GITHUB - STEP BY STEP
+═══════════════════════════════════════════════════════════
+
+✅ STEP 1: CREATE REPOSITORY ON GITHUB
+────────────────────────────────────────
+1. Go to: https://github.com/new
+2. Repository name: nebula-encode
+3. Description: Professional Video Converter with GPU Acceleration
+4. Make it PUBLIC (so others can see it)
+5. DON'T check "Add a README" (we already have one)
+6. Click "Create repository"
+
+
+✅ STEP 2: COPY YOUR COMMANDS FROM GITHUB
+────────────────────────────────────────
+After creating the repo, GitHub will show you commands.
+Look for the section: "…or push an existing repository from the command line"
+
+It will look like this:
+    git remote add origin https://github.com/YOUR-USERNAME/nebula-encode.git
+    git branch -M main
+    git push -u origin main
+
+
+✅ STEP 3: RUN THESE COMMANDS
+────────────────────────────────────────
+Open PowerShell in this folder and run:
+
+cd "c:\Users\hasan\Downloads\Compressed\vid-venture-app-main"
+
+git remote add origin https://github.com/YOUR-USERNAME/nebula-encode.git
+(Replace YOUR-USERNAME with your actual GitHub username!)
+
+git branch -M main
+
+git push -u origin main
+
+
+✅ STEP 4: UPLOAD THE PORTABLE APP (OPTIONAL)
+────────────────────────────────────────
+To share the built app (NebulaEncode-Portable.zip):
+
+1. Go to your repository on GitHub
+2. Click "Releases" tab
+3. Click "Create a new release"
+4. Tag version: v1.0.0
+5. Release title: Nebula Encode v1.0.0 - Portable Windows App
+6. Description:
+   
+   ### Download & Run
+   - Download NebulaEncode-Portable.zip
+   - Extract anywhere
+   - Run Nebula Encode.exe
+   - No installation needed!
+   
+   ### Features
+   - H.264, H.265, VP9, AV1 encoding
+   - GPU acceleration
+   - Alpha channel support
+   - Batch processing
+
+7. Upload file: dist\NebulaEncode-Portable.zip
+8. Click "Publish release"
+
+
+═══════════════════════════════════════════════════════════
+
+🎉 DONE! Your project is now on GitHub!
+
+Share the link: https://github.com/YOUR-USERNAME/nebula-encode
+
+═══════════════════════════════════════════════════════════
