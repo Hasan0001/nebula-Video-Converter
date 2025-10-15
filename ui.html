@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nebula Encode: Professional Video Optimization Suite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom Styles */
+        :root {
+            --accent-color: #10B981; /* A modern, vibrant green */
+            --background-color: #1a1a1d;
+            --glass-background: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-primary: #f0f0f0;
+            --text-secondary: #a0a0b0;
+            --text-tertiary: #6b6b7b;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-color);
+            overflow: hidden;
+            color: var(--text-primary);
+        }
+
+        .background-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(ellipse 80% 80% at 50% -20%,rgba(16, 185, 129, 0.2),rgba(255,255,255,0));
+        }
+        
+        /* Main container with refined glass effect */
+        .hud-container {
+            border: 1px solid var(--glass-border);
+            background: var(--glass-background);
+            backdrop-filter: blur(30px) saturate(150%);
+            -webkit-backdrop-filter: blur(30px) saturate(150%);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.3);
+        }
+
+        /* --- LEFT PANEL: BATCH QUEUE --- */
+        .queue-item {
+            background: transparent;
+            border: 1px solid transparent;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: background 0.2s ease;
+            border-radius: 4px;
+        }
+        .queue-item.selected {
+            background: rgba(16, 185, 129, 0.1);
+            border-left-color: var(--accent-color);
+        }
+        .queue-item:hover {
+            background: rgba(255,255,255,0.05);
+        }
+        .progress-bar-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 99px;
+            height: 6px;
+        }
+        .progress-bar {
+            background: var(--accent-color);
+            box-shadow: 0 0 8px var(--accent-color);
+            transition: width 0.5s ease-out;
+            border-radius: 99px;
+        }
+
+        /* --- RIGHT PANEL: CONTROLS --- */
+        .control-label {
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
+
+        /* Modern Toggle Switch */
+        .switch { position: relative; display: inline-block; width: 38px; height: 22px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255, 255, 255, 0.1); transition: .4s; border-radius: 22px; border: 1px solid var(--glass-border); }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent-color); box-shadow: 0 0 10px var(--accent-color); border-color: var(--accent-color); }
+        input:checked + .slider:before { transform: translateX(16px); }
+        
+        /* Modern Slider */
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-runnable-track { height: 4px; background: rgba(255, 255, 255, 0.1); border-radius: 4px; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #fff; cursor: pointer; margin-top: -6px; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+
+        /* Modern Dropdown & Inputs */
+        select, .text-input {
+            background-color: var(--glass-background);
+            border: 1px solid var(--glass-border);
+            color: rgba(255, 255, 255, 0.85);
+            border-radius: 6px;
+            padding: 0.5rem 1.25rem;
+            font-size: 0.875rem;
+        }
+
+        select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23a0a0b0' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 1rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding: 0.75rem 3.5rem 0.75rem 1rem !important;
+            min-height: 44px;
+            line-height: 1.5;
+        }
+
+        option {
+            background: #2a2a2e;
+            color: var(--text-primary);
+        }
+
+        select:focus, .text-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 10px var(--accent-color);
+        }
+
+        /* Minimalistic Buttons */
+        .hud-button {
+            border: 1px solid var(--glass-border);
+            background: var(--glass-background);
+            border-radius: 6px;
+            transition: all 0.2s;
+            color: var(--text-secondary);
+        }
+        .hud-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+            color: var(--text-primary);
+        }
+        .hud-button.primary {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            color: #1a1a1d;
+            font-weight: 600;
+        }
+        .hud-button.primary:hover {
+            background: #14af8f;
+            border-color: #14af8f;
+        }
+        .hud-button.danger {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.5);
+            color: #ef4444;
+            font-weight: 600;
+        }
+        .hud-button.danger:hover {
+            background: rgba(239, 68, 68, 0.3);
+            border-color: #ef4444;
+            color: #ff6b6b;
+        }
+        .hud-button.primary:hover {
+            background: #10a070;
+            box-shadow: 0 0 10px var(--accent-color);
+        }
+
+        /* Optimize Animation Area */
+        .optimize-animation-wrapper {
+            position: relative;
+            width: 192px;
+            height: 192px;
+            border-radius: 50%;
+            border: 1px solid var(--glass-border);
+            background: var(--glass-background);
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
+        }
+        
+        /* Drag & Drop */
+        .drop-zone-circle { border: 2px dashed var(--glass-border); transition: all 0.3s ease; }
+        .drop-zone-circle.drag-over { border-style: solid; border-color: var(--accent-color); background: rgba(16, 185, 129, 0.1); box-shadow: 0 0 20px var(--accent-color); }
+        
+        #hyperspace-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            display: none;
+        }
+        .optimize-animation-wrapper.is-processing #hyperspace-canvas {
+            display: block;
+        }
+
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div class="background-overlay"></div>
+
+    <!-- Main Console Container --><main id="app-container" class="hud-container w-full max-w-7xl h-[95vh] min-h-[750px] rounded-2xl flex overflow-hidden">
+        
+        <!-- Left Panel --><aside class="w-2/5 p-6 flex flex-col space-y-4 border-r border-white/10">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-xl font-bold text-white">Nebula Encode</h1>
+                    <p class="text-sm text-white/60">Professional Video Optimisation Suite</p>
+                </div>
+                <div id="drop-zone" class="drop-zone-circle w-28 h-28 rounded-full flex flex-col items-center justify-center cursor-pointer">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-white/70 mb-1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <p id="drop-zone-text" class="text-xs text-center text-white/50">DRAG & DROP</p>
+                    <input type="file" id="file-input" class="hidden" accept="video/*" multiple>
+                </div>
+            </div>
+            <div class="flex-grow flex flex-col min-h-0">
+                <h2 class="text-white/70 font-semibold tracking-wider mb-3 text-sm">BATCH QUEUE</h2>
+                <div id="queue-list" class="flex-grow space-y-1 pr-2 -mr-2 overflow-y-auto"></div>
+            </div>
+            <div class="flex-shrink-0 flex items-center space-x-3 pt-3 border-t border-white/10">
+                <button id="start-batch-btn" class="hud-button primary flex-1 py-2">CONVERT</button>
+                <button id="stop-batch-btn" class="hud-button danger flex-1 py-2 hidden">STOP</button>
+                <button id="clear-all-btn" class="hud-button flex-1 py-2">CLEAR ALL</button>
+            </div>
+        </aside>
+
+        <!-- Right Panel --><section class="flex-1 p-8 flex flex-col">
+            <div>
+                <h2 class="text-xl font-bold text-white tracking-wider mb-8">ADVANCED CONTROLS</h2>
+                <div class="space-y-8">
+                    <div class="grid grid-cols-2 gap-x-12">
+                        <div class="flex items-center justify-between">
+                            <label class="control-label">ALPHA CHANNEL</label>
+                            <label class="switch"><input type="checkbox" id="alpha-toggle" checked><span class="slider"></span></label>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <label class="control-label">GPU ACCELERATION</label>
+                            <label class="switch"><input type="checkbox" id="gpu-toggle" checked><span class="slider"></span></label>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-x-12 gap-y-6">
+                        <div><label class="control-label">RESOLUTION</label><input type="range" id="resolution-slider" class="w-full mt-3"></div>
+                        <div><label class="control-label">BITRATE</label><input type="range" id="bitrate-slider" class="w-full mt-3"></div>
+                        <input type="text" id="resolution-display" class="text-input text-center font-mono cursor-pointer" placeholder="1920x1080" title="Click to enter custom resolution">
+                        <div id="bitrate-display" class="text-input text-center font-mono">8000 kbps</div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-x-12 gap-y-6">
+                        <div>
+                            <label for="codec" class="control-label">CODEC</label>
+                            <select id="codec" class="w-full" style="margin-top: 0.75rem;">
+                                <option selected>H.264 (AVC)</option><option>WebM (VP9)</option><option>H.265 (HEVC)</option><option>AV1</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="preset" class="control-label">PRESET</label>
+                            <select id="preset" class="w-full" style="margin-top: 0.75rem;">
+                                <option>Ultrafast</option><option>Superfast</option><option selected>Fast</option><option>Medium</option><option>Slow</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="control-label">DESTINATION (Click to choose output folder)</label>
+                        <div id="destination-display" class="text-input font-mono mt-2 cursor-pointer hover:bg-white/5 transition-colors">Click to select output folder...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex-grow flex items-center justify-center pt-8">
+                <div class="flex w-full items-center justify-center max-w-3xl">
+                    <div id="optimize-wrapper" class="flex flex-col justify-center items-center">
+                        <div id="optimize-container" class="optimize-animation-wrapper relative flex items-center justify-center overflow-hidden">
+                            <canvas id="hyperspace-canvas"></canvas>
+                            <div id="optimize-text-container" class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                <span id="optimize-text" class="hidden text-3xl font-semibold tracking-wider text-white" style="text-shadow: 0 0 10px rgba(0,0,0,0.5)"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const dropZone = document.getElementById('drop-zone');
+            const fileInput = document.getElementById('file-input');
+            const queueList = document.getElementById('queue-list');
+            const clearAllBtn = document.getElementById('clear-all-btn');
+            const startBatchBtn = document.getElementById('start-batch-btn');
+            const stopBatchBtn = document.getElementById('stop-batch-btn');
+            const optimizeContainer = document.getElementById('optimize-container');
+            const optimizeText = document.getElementById('optimize-text');
+            const canvas = document.getElementById('hyperspace-canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Get UI control elements
+            const codecSelect = document.getElementById('codec');
+            const presetSelect = document.getElementById('preset');
+            const alphaToggle = document.getElementById('alpha-toggle');
+            const gpuToggle = document.getElementById('gpu-toggle');
+            const resolutionSlider = document.getElementById('resolution-slider');
+            const bitrateSlider = document.getElementById('bitrate-slider');
+            const resolutionDisplay = document.getElementById('resolution-display');
+            const bitrateDisplay = document.getElementById('bitrate-display');
+            const destinationDisplay = document.getElementById('destination-display');
+            
+            let customResolution = null;
+            
+            let fileQueue = [];
+            let isProcessing = false;
+            let shouldStop = false;
+            let selectedFileIndex = -1;
+            let animationFrameId;
+            let outputDirectory = null;
+
+            // Resolution presets
+            const resolutions = [
+                { value: 0, label: '854x480', scale: '854:480' },
+                { value: 25, label: '1280x720', scale: '1280:720' },
+                { value: 50, label: '1920x1080', scale: '1920:1080' },
+                { value: 75, label: '2560x1440', scale: '2560:1440' },
+                { value: 100, label: '3840x2160', scale: '3840:2160' }
+            ];
+
+            // Bitrate presets (in kbps)
+            const bitrates = [
+                { value: 0, label: '2000 kbps', bitrate: 2000 },
+                { value: 25, label: '4000 kbps', bitrate: 4000 },
+                { value: 50, label: '6000 kbps', bitrate: 6000 },
+                { value: 75, label: '8000 kbps', bitrate: 8000 },
+                { value: 100, label: '12000 kbps', bitrate: 12000 }
+            ];
+
+            // Initialize sliders
+            resolutionSlider.value = 50; // 1920x1080
+            bitrateSlider.value = 25; // 4000 kbps - good balance of quality and file size
+            updateResolutionDisplay(50);
+            updateBitrateDisplay(25);
+            
+            // Initialize destination display
+            if (window.processEnv) {
+                outputDirectory = `${window.processEnv.USERPROFILE}\\Desktop`;
+                destinationDisplay.textContent = outputDirectory;
+            } else {
+                destinationDisplay.textContent = 'Click to select output folder...';
+            }
+
+            // Check if FFmpeg is available
+            if (window.electronAPI) {
+                const ffmpegCheck = await window.electronAPI.checkFFmpeg();
+                console.log('FFmpeg available:', ffmpegCheck.available);
+                if (!ffmpegCheck.available) {
+                    alert('FFmpeg not found! Video processing will not work.');
+                }
+            }
+
+            const initialQueue = [];
+            
+            // Show helpful message if queue is empty
+            function showEmptyQueueMessage() {
+                queueList.innerHTML = `
+                    <div class="text-center py-10">
+                        <p class="text-white/40 text-sm mb-2">Queue is empty</p>
+                        <p class="text-white/30 text-xs">Drag & drop video files or click the drop zone above</p>
+                    </div>
+                `;
+            }
+            
+            // --- Canvas Animation Setup ---
+            let particles = [];
+            const particleCount = 200;
+            const colors = ['#10B981', '#34D399', '#A7F3D0'];
+
+            function resizeCanvas() {
+                const size = optimizeContainer.offsetWidth;
+                canvas.width = size;
+                canvas.height = size;
+            }
+
+            function initParticles() {
+                particles = [];
+                for(let i = 0; i < particleCount; i++) {
+                    particles.push(createParticle());
+                }
+            }
+
+            function createParticle(p) {
+                const particle = p || {};
+                // Start particle at the center
+                particle.x = canvas.width / 2;
+                particle.y = canvas.height / 2;
+                particle.angle = Math.random() * Math.PI * 2;
+                particle.speed = Math.random() * 3 + 1;
+                particle.life = Math.random() * 50 + 50; // frames to live
+                particle.color = colors[Math.floor(Math.random() * colors.length)];
+                particle.history = [{x: particle.x, y: particle.y}];
+                return particle;
+            }
+
+            function animateParticles() {
+                // Use a trailing effect instead of clearing the whole canvas
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; // semi-transparent black
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                drawStaticStars();
+                drawCentralGlow();
+                
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+
+                particles.forEach(p => {
+                    // Move outwards from the center
+                    p.x += Math.cos(p.angle) * p.speed;
+                    p.y += Math.sin(p.angle) * p.speed;
+                    
+                    const distance = Math.sqrt(Math.pow(p.x - centerX, 2) + Math.pow(p.y - centerY, 2));
+
+                    // If particle is outside the circle, reset it
+                    if (distance > canvas.width / 2) {
+                        createParticle(p);
+                    } else {
+                        const prevX = p.history[p.history.length-1].x;
+                        const prevY = p.history[p.history.length-1].y;
+
+                        ctx.beginPath();
+                        ctx.moveTo(prevX, prevY);
+                        ctx.lineTo(p.x, p.y);
+                        ctx.strokeStyle = p.color;
+                        ctx.lineWidth = 1.5;
+                        ctx.stroke();
+                        
+                        p.history.push({x: p.x, y: p.y});
+                        if (p.history.length > 5) {
+                            p.history.shift();
+                        }
+                    }
+                });
+
+                animationFrameId = requestAnimationFrame(animateParticles);
+            }
+
+            function drawCentralGlow() {
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+                const pulse = Math.sin(Date.now() / 400) * 5 + 20; // Pulsating size
+                const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, pulse);
+                gradient.addColorStop(0, 'rgba(16, 185, 129, 1)');
+                gradient.addColorStop(1, 'rgba(16, 185, 129, 0)');
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, pulse, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            let staticStars = [];
+            function initStaticStars() {
+                if(staticStars.length > 0) return;
+                for(let i=0; i<100; i++) {
+                    staticStars.push({
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * canvas.height,
+                        r: Math.random() * 0.8 + 0.2
+                    });
+                }
+            }
+
+            function drawStaticStars() {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                staticStars.forEach(star => {
+                    ctx.beginPath();
+                    ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            }
+
+            function startAnimation() {
+                resizeCanvas();
+                initParticles();
+                initStaticStars();
+                if(animationFrameId) cancelAnimationFrame(animationFrameId);
+                animateParticles();
+            }
+
+            function stopAnimation() {
+                if(animationFrameId) cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+                 // Clear canvas after stopping
+                setTimeout(() => {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                }, 100);
+            }
+
+            function renderQueue() {
+                queueList.innerHTML = '';
+                if (fileQueue.length === 0) {
+                    queueList.innerHTML = `<div class="text-center text-white/40 py-10 text-sm">Queue is empty</div>`;
+                    return;
+                }
+                fileQueue.forEach((file, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'queue-item p-3 flex items-center space-x-4 cursor-pointer';
+                    item.dataset.index = index;
+                    if(index === selectedFileIndex) item.classList.add('selected');
+                    let statusText = file.status;
+                    let statusTitle = '';
+                    if (file.status === 'Processing') statusText = `Processing (${file.progress}%)`;
+                    if (file.status === 'Done') statusText = `Done`;
+                    if (file.status === 'Error') {
+                        statusText = `Error`;
+                        statusTitle = file.error || 'Processing failed';
+                    }
+                    item.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${file.status === 'Done' ? 'text-green-400' : file.status === 'Error' ? 'text-red-400' : 'text-white/70'}"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                        <div class="flex-grow min-w-0">
+                            <p class="font-mono text-sm truncate text-white/90" title="${file.name}">${file.name}</p>
+                            <div class="progress-bar-container mt-1.5 w-full"><div class="progress-bar h-full" style="width: ${file.progress}%"></div></div>
+                        </div>
+                        <span class="text-xs font-mono w-28 text-right ${file.status === 'Done' ? 'text-green-400' : file.status === 'Error' ? 'text-red-400' : 'text-white/50'}" title="${statusTitle}">${statusText}</span>
+                        <button data-index="${index}" class="remove-btn text-white/40 hover:text-red-500 text-xl font-bold">&times;</button>
+                    `;
+                    queueList.appendChild(item);
+                });
+            }
+
+            function updateResolutionDisplay(value) {
+                if (customResolution) {
+                    resolutionDisplay.value = customResolution;
+                } else {
+                    const res = resolutions.find(r => r.value === parseInt(value)) || resolutions[4];
+                    resolutionDisplay.value = res.label;
+                }
+            }
+
+            function updateBitrateDisplay(value) {
+                const br = bitrates.find(b => b.value === parseInt(value)) || bitrates[3];
+                bitrateDisplay.textContent = br.label;
+            }
+
+            // Event listeners for sliders
+            resolutionSlider.addEventListener('input', (e) => {
+                const val = parseInt(e.target.value);
+                const closest = resolutions.reduce((prev, curr) => 
+                    Math.abs(curr.value - val) < Math.abs(prev.value - val) ? curr : prev
+                );
+                e.target.value = closest.value;
+                customResolution = null; // Reset custom when using slider
+                updateResolutionDisplay(closest.value);
+            });
+            
+            // Custom resolution input
+            resolutionDisplay.addEventListener('focus', function() {
+                this.select();
+            });
+            
+            resolutionDisplay.addEventListener('change', function() {
+                const input = this.value.trim();
+                // Validate format: WIDTHxHEIGHT or WIDTH:HEIGHT
+                const match = input.match(/^(\d+)[x:](\d+)$/i);
+                if (match) {
+                    customResolution = match[1] + 'x' + match[2];
+                    this.value = customResolution;
+                } else if (input.match(/^\d+$/)) {
+                    // Just width provided, assume 16:9
+                    const width = parseInt(input);
+                    const height = Math.round(width * 9 / 16);
+                    customResolution = width + 'x' + height;
+                    this.value = customResolution;
+                } else {
+                    alert('Invalid format! Use: 1920x1080 or 1920:1080');
+                    customResolution = null;
+                    updateResolutionDisplay(resolutionSlider.value);
+                }
+            });
+
+            bitrateSlider.addEventListener('input', (e) => {
+                const val = parseInt(e.target.value);
+                const closest = bitrates.reduce((prev, curr) => 
+                    Math.abs(curr.value - val) < Math.abs(prev.value - val) ? curr : prev
+                );
+                e.target.value = closest.value;
+                updateBitrateDisplay(closest.value);
+            });
+
+            // Destination display click to select folder
+            destinationDisplay.addEventListener('click', async () => {
+                if (window.electronAPI) {
+                    const dir = await window.electronAPI.selectOutputDirectory();
+                    if (dir) {
+                        outputDirectory = dir;
+                        destinationDisplay.textContent = dir;
+                    }
+                }
+            });
+            
+            // Warn about slow codecs
+            codecSelect.addEventListener('change', (e) => {
+                const slowCodecs = {
+                    'WebM (VP9)': 'WebM (VP9) is EXTREMELY SLOW (50-100x slower than H.264). Use H.264 for fast encoding!',
+                    'AV1': 'AV1 is VERY SLOW (20-50x slower than H.264). Use H.264 for fast encoding!',
+                    'H.265 (HEVC)': 'H.265 is slower than H.264 (2-5x). For fastest speed, use H.264!'
+                };
+                
+                if (slowCodecs[e.target.value]) {
+                    console.warn('⚠️', slowCodecs[e.target.value]);
+                }
+            });
+
+            function addFileToQueue(file) {
+                // Store the file path for Electron
+                const filePath = file.path || '';
+                fileQueue.push({ 
+                    name: file.name, 
+                    status: 'Idle', 
+                    progress: 0, 
+                    path: filePath,
+                    file: file 
+                });
+                renderQueue();
+                
+                // DON'T auto-set output directory from input file
+                // User should click DESTINATION to choose where to save
+                if (!outputDirectory) {
+                    if (window.processEnv) {
+                        // Default to Desktop
+                        outputDirectory = `${window.processEnv.USERPROFILE}\\Desktop`;
+                        destinationDisplay.textContent = outputDirectory + ' (Click to change)';
+                    } else {
+                        outputDirectory = 'C:\\Users\\Desktop';
+                        destinationDisplay.textContent = outputDirectory + ' (Click to change)';
+                    }
+                }
+            }
+            
+            
+            async function startBatchProcessing() {
+                if (isProcessing) return;
+                if (!window.electronAPI) {
+                    alert('Electron API not available. Please run this app in Electron.');
+                    return;
+                }
+
+                const itemsToProcess = fileQueue.filter(f => f.status === 'Idle');
+                if (itemsToProcess.length === 0) {
+                    alert('No videos to process!\n\nPlease:\n1. Click "CLEAR ALL" to remove error files\n2. Add videos by clicking the drop zone or dragging files');
+                    return;
+                }
+                
+                console.log('Starting batch processing...', itemsToProcess);
+
+                if (!outputDirectory) {
+                    // Try to use Desktop as default
+                    if (window.processEnv && window.processEnv.USERPROFILE) {
+                        outputDirectory = `${window.processEnv.USERPROFILE}\\Desktop`;
+                        destinationDisplay.textContent = outputDirectory;
+                    } else {
+                        alert('Please select an output directory by clicking on the destination path.');
+                        return;
+                    }
+                }
+
+                isProcessing = true;
+                shouldStop = false;
+                optimizeContainer.classList.add('is-processing');
+                startAnimation();
+                optimizeText.textContent = `0%`;
+                optimizeText.classList.remove('hidden');
+                
+                // Show stop button, hide start button
+                startBatchBtn.classList.add('hidden');
+                stopBatchBtn.classList.remove('hidden');
+
+                // Get current settings
+                const codec = codecSelect.value;
+                const preset = presetSelect.value;
+                const preserveAlpha = alphaToggle.checked;
+                const useGPU = gpuToggle.checked;
+                
+                // Get resolution - use custom if set, otherwise use slider
+                let resolution;
+                if (customResolution) {
+                    resolution = customResolution.replace('x', ':');
+                } else {
+                    const resValue = parseInt(resolutionSlider.value);
+                    resolution = resolutions.find(r => r.value === resValue)?.scale || '1920:1080';
+                }
+                
+                const brValue = parseInt(bitrateSlider.value);
+                const bitrate = bitrates.find(b => b.value === brValue)?.bitrate || 8000;
+
+                // Listen for progress updates
+                window.electronAPI.onVideoProgress((data) => {
+                    const file = fileQueue.find(f => f.path === data.inputPath);
+                    if (file) {
+                        file.progress = data.progress;
+                        renderQueue();
+                        updateOverallProgress();
+                    }
+                });
+
+                // Process each video sequentially
+                for (const file of itemsToProcess) {
+                    // Check if user clicked stop
+                    if (shouldStop) {
+                        console.log('Processing stopped by user');
+                        file.status = 'Idle';
+                        renderQueue();
+                        break;
+                    }
+                    
+                    console.log('Processing file:', file.name, 'Path:', file.path);
+                    
+                    // Validate file path
+                    if (!file.path || file.path === '') {
+                        console.error('No file path for:', file.name);
+                        file.status = 'Error';
+                        file.error = 'File path not available. Try: 1) Click CLEAR ALL, 2) Click drop zone to add files';
+                        renderQueue();
+                        continue;
+                    }
+                    
+                    console.log('✅ File path valid, starting processing:', file.path);
+                    
+                    file.status = 'Processing';
+                    file.progress = 0;
+                    renderQueue();
+
+                    // Choose output extension based on codec
+                    const outputExt = codec === 'WebM (VP9)' ? '.webm' : '.mp4';
+                    const outputFileName = file.name.replace(/\.[^/.]+$/, `_optimized${outputExt}`);
+                    const outputPath = `${outputDirectory}\\${outputFileName}`;
+
+                    console.log('Processing:', file.name);
+                    console.log('Input:', file.path);
+                    console.log('Output:', outputPath);
+                    console.log('Settings:', { codec, preset, resolution, bitrate, useGPU });
+
+                    try {
+                        const result = await window.electronAPI.processVideo({
+                            inputPath: file.path,
+                            outputPath: outputPath,
+                            codec: codec,
+                            preset: preset,
+                            resolution: resolution,
+                            bitrate: bitrate,
+                            preserveAlpha: preserveAlpha,
+                            useGPU: useGPU
+                        });
+
+                        console.log('Processing complete:', result);
+                        file.status = 'Done';
+                        file.progress = 100;
+                    } catch (error) {
+                        console.error('Processing error:', error);
+                        file.status = 'Error';
+                        file.error = error.message || 'Processing failed';
+                    }
+
+                    renderQueue();
+                    updateOverallProgress();
+                    
+                    // Check if stop was requested after processing this file
+                    if (shouldStop) {
+                        console.log('Stop detected - marking remaining files as Idle');
+                        // Mark all remaining files as Idle
+                        for (let i = itemsToProcess.indexOf(file) + 1; i < itemsToProcess.length; i++) {
+                            itemsToProcess[i].status = 'Idle';
+                        }
+                        break;
+                    }
+                }
+
+                // All done
+                isProcessing = false;
+                shouldStop = false;
+                
+                // Restore buttons
+                startBatchBtn.classList.remove('hidden');
+                stopBatchBtn.classList.add('hidden');
+                stopBatchBtn.textContent = 'STOP';
+                stopBatchBtn.disabled = false;
+                
+                setTimeout(() => {
+                    optimizeContainer.classList.remove('is-processing');
+                    stopAnimation();
+                    optimizeText.classList.add('hidden');
+                }, 500);
+            }
+
+            function updateOverallProgress() {
+                let totalProgress = 0;
+                let processedCount = 0;
+                
+                fileQueue.forEach(file => {
+                    if (file.status !== 'Idle') {
+                        totalProgress += file.progress;
+                        processedCount++;
+                    }
+                });
+
+                const overallProgress = processedCount > 0 ? Math.round(totalProgress / processedCount) : 0;
+                optimizeText.textContent = `${overallProgress}%`;
+            }
+
+            // Event Listeners
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => dropZone.addEventListener(eventName, e => { e.preventDefault(); e.stopPropagation(); }, false));
+            ['dragenter', 'dragover'].forEach(eventName => dropZone.addEventListener(eventName, () => dropZone.classList.add('drag-over'), false));
+            ['dragleave', 'drop'].forEach(eventName => dropZone.addEventListener(eventName, () => dropZone.classList.remove('drag-over'), false));
+            dropZone.addEventListener('drop', e => { 
+                const files = Array.from(e.dataTransfer.files);
+                files.forEach(file => {
+                    if (file.type.startsWith('video/') || file.name.match(/\.(mp4|mov|avi|mkv|webm|flv|m4v|wmv|mpg|mpeg)$/i)) {
+                        addFileToQueue(file);
+                    }
+                });
+            }, false);
+            
+            dropZone.addEventListener('click', async () => {
+                if (window.electronAPI && window.electronAPI.selectVideoFiles) {
+                    // Use Electron file dialog for better path handling
+                    const filePaths = await window.electronAPI.selectVideoFiles();
+                    if (filePaths && filePaths.length > 0) {
+                        filePaths.forEach(filePath => {
+                            const fileName = filePath.split(/[\\\\/]/).pop();
+                            addFileToQueue({ name: fileName, path: filePath });
+                        });
+                    }
+                } else {
+                    // Fallback to HTML file input
+                    fileInput.click();
+                }
+            });
+            
+            fileInput.addEventListener('change', (e) => { 
+                for (const file of e.target.files) { 
+                    addFileToQueue(file); 
+                } 
+            });
+            queueList.addEventListener('click', (e) => { 
+                const item = e.target.closest('.queue-item');
+                const removeBtn = e.target.closest('.remove-btn');
+                if (removeBtn) {
+                    const indexToRemove = parseInt(removeBtn.dataset.index);
+                    fileQueue.splice(indexToRemove, 1);
+                    if (selectedFileIndex === indexToRemove) {
+                        selectedFileIndex = -1;
+                    } else if (selectedFileIndex > indexToRemove) {
+                        selectedFileIndex--;
+                    }
+                    renderQueue();
+                    return;
+                }
+                if (item) {
+                    selectedFileIndex = parseInt(item.dataset.index);
+                    renderQueue();
+                }
+            });
+            clearAllBtn.addEventListener('click', () => { fileQueue = []; selectedFileIndex = -1; renderQueue(); });
+            startBatchBtn.addEventListener('click', startBatchProcessing);
+            stopBatchBtn.addEventListener('click', async () => {
+                if (isProcessing && window.electronAPI) {
+                    shouldStop = true;
+                    console.log('🛑 STOP clicked - cancelling current video immediately');
+                    stopBatchBtn.textContent = 'STOPPING...';
+                    stopBatchBtn.disabled = true;
+                    
+                    // Cancel the current FFmpeg process
+                    try {
+                        await window.electronAPI.cancelProcessing();
+                        console.log('✅ Processing cancelled');
+                    } catch (err) {
+                        console.error('Error cancelling:', err);
+                    }
+                }
+            });
+            
+            // Initial Load
+            fileQueue = initialQueue;
+            renderQueue();
+            resizeCanvas();
+        });
+    </script>
+</body>
+</html>
+

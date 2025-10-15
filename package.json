@@ -1,0 +1,67 @@
+{
+  "name": "nebula-encode",
+  "version": "1.0.0",
+  "description": "Professional Video Optimization Suite - Windows Desktop Application",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder build --win --publish never",
+    "build:dir": "electron-builder build --win --dir",
+    "postinstall": "node download-ffmpeg.js"
+  },
+  "keywords": [
+    "video",
+    "encoder",
+    "ffmpeg",
+    "optimization"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
+  },
+  "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
+    "@ffprobe-installer/ffprobe": "^2.1.2"
+  },
+  "build": {
+    "appId": "com.nebulaencode.app",
+    "productName": "Nebula Encode",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "icon.ico",
+      "artifactName": "Nebula Encode-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Nebula Encode"
+    },
+    "files": [
+      "**/*",
+      "!node_modules/**/*",
+      "node_modules/@ffmpeg-installer/**/*",
+      "node_modules/@ffprobe-installer/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "node_modules/@ffmpeg-installer/win32-x64",
+        "to": "ffmpeg",
+        "filter": ["**/*"]
+      }
+    ]
+  }
+}

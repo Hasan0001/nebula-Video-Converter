@@ -1,0 +1,14 @@
+# Nebula Encode - Windows Icon Placeholder
+# 
+# This is a placeholder file. To add a proper icon:
+# 1. Create or download a .ico file (256x256 or 512x512 recommended)
+# 2. Name it "icon.ico" 
+# 3. Place it in the root directory of the project
+# 4. Replace this placeholder file
+#
+# You can create an icon using:
+# - Online tools: https://www.favicon-generator.org/ or https://convertico.com/
+# - Desktop software: GIMP, Photoshop, or specialized icon editors
+# - Or use the Nebula Encode logo/brand image
+#
+# For now, Electron will use its default icon.
